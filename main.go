@@ -33,12 +33,11 @@ func main() {
 		if len(replScanner.Text()) == 0 {
 			continue
 		}
-		inputError := checkInput(replScanner.Text())
+		lvl, inputError := getFloat(replScanner.Text())
 		if inputError != nil {
-			fmt.Printf("Error: %v, please try again\n", inputError)
+			fmt.Printf("%sError:%s %v, please try again\n", red, reset, inputError)
 			continue
 		}
-		lvl, _ := strconv.ParseFloat(replScanner.Text(), 64)
 
 		sunl := math.Ceil(lvl * 0.34)
 		unl := math.Ceil(lvl * 0.67)
@@ -55,7 +54,7 @@ func main() {
 			fmt.Print("Enter Y to calc again, or anything else to quit => ")
 			replScanner.Scan()
 			if err := replScanner.Err(); err != nil {
-				fmt.Printf("error in input => %v\n", replScanner.Err())
+				fmt.Printf("Error in input => %v\n", replScanner.Err())
 				continue
 			}
 			if len(replScanner.Text()) == 0 {
@@ -73,15 +72,21 @@ func main() {
 
 }
 
-func checkInput(s string) error {
+func getFloat(s string) (float64, error) {
+
 	if s == "0" {
-		return errors.New("Level cannot be 0")
+		return 0, errors.New("Level cannot be 0")
 	}
-	for i := 0; i < len(s); i++ {
-		if s[i] < '0' || s[i] > '9' {
-			return errors.New("Invalid level detected")
-		}
+	lvl, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0, errors.New("This is not a level")
 	}
-	return nil
+	if lvl <= 0 {
+		return 0, errors.New("Negative levels not accepted")
+	}
+	if lvl-math.Trunc(lvl) != 0 {
+		return 0, errors.New("Half levels not supported")
+	}
+	return lvl, nil
 
 }
